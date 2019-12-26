@@ -131,7 +131,7 @@ Java_com_viliussutkus89_android_pdf2htmlex_pdf2htmlEX_call_1pdf2htmlEX(JNIEnv *e
   pid_t pid = fork();
   if (0 == pid) {
     retVal = pdf2htmlEX_main(argc, argv);
-    exit(retVal);
+    //exit(retVal);
   }
   else if (0 < pid) {
     int wstatus;
