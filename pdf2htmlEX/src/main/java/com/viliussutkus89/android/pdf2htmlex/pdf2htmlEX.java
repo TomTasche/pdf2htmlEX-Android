@@ -43,6 +43,10 @@ public final class pdf2htmlEX {
   private String p_ownerPassword = "";
   private String p_userPassword = "";
 
+  private final static Object m_forkingSynchro = new Object();
+  private static boolean m_isNoForking = false;
+  private static boolean m_noForkingConversionAlreadyDone = false;
+
   public static class ConversionFailedException extends Exception {
     public ConversionFailedException(String errorMessage) {
       super(errorMessage);
@@ -110,6 +114,16 @@ public final class pdf2htmlEX {
     return this;
   }
 
+  public void setNoForking(boolean iDoUnderstandThatIWillHaveToRestartTheAppBeforeICanRunConversionForTheSecondTime) throws IllegalArgumentException {
+    if (!iDoUnderstandThatIWillHaveToRestartTheAppBeforeICanRunConversionForTheSecondTime) {
+      throw new IllegalArgumentException();
+    }
+    synchronized (m_forkingSynchro) {
+      m_isNoForking = true;
+    }
+    set_no_forking();
+  }
+
   public File convert() throws IOException, ConversionFailedException {
     if (null == this.p_inputPDF) {
       throw new ConversionFailedException("No Input PDF given!");
@@ -119,6 +133,12 @@ public final class pdf2htmlEX {
       throw new ConversionFailedException("Input PDF does not exist!");
     }
 
+    synchronized (m_forkingSynchro) {
+      if (m_noForkingConversionAlreadyDone) {
+        throw new ConversionFailedException("No forking mode allows only one conversion!");
+      }
+      m_noForkingConversionAlreadyDone = m_isNoForking;
+    }
     String inputFilenameNoPDFExt = this.p_inputPDF.getName();
     if (inputFilenameNoPDFExt.endsWith(".pdf")) {
       inputFilenameNoPDFExt = inputFilenameNoPDFExt.substring(0, inputFilenameNoPDFExt.length() - 4);
@@ -133,7 +153,7 @@ public final class pdf2htmlEX {
       m_poppler_dataDir.getAbsolutePath(), m_pdf2htmlEX_tmpDir.getAbsolutePath(),
       this.p_inputPDF.getAbsolutePath(), outputHtml.getAbsolutePath(),
       this.p_ownerPassword, this.p_userPassword
-      );
+    );
 
     if (0 != retVal) {
       outputHtml.delete();
@@ -148,4 +168,5 @@ public final class pdf2htmlEX {
   // Because Java cannot setenv for the current process
   static native void set_environment_value(String key, String value);
 
+  private native static void set_no_forking();
 }
