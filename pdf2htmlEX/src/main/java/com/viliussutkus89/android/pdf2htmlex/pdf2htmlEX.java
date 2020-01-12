@@ -137,7 +137,7 @@ public final class pdf2htmlEX {
       if (m_noForkingConversionAlreadyDone) {
         throw new ConversionFailedException("No forking mode allows only one conversion!");
       }
-      m_noForkingConversionAlreadyDone = m_isNoForking;
+      //m_noForkingConversionAlreadyDone = m_isNoForking;
     }
     String inputFilenameNoPDFExt = this.p_inputPDF.getName();
     if (inputFilenameNoPDFExt.endsWith(".pdf")) {
